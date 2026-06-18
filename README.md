@@ -92,7 +92,7 @@ graph TD
     Worker <-->|9. Generate Narrative Summary| LLM
     Worker -->|10. Save JobSummary| DB
 
-    User -->|11. Poll Status GET /jobs/{job_id}/status| API
+    User -->|"11. Poll Status GET /jobs/{job_id}/status"| API
     API -->|12. Fetch Status| DB
 ```
 
