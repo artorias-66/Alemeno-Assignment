@@ -94,7 +94,7 @@ sequenceDiagram
     
     Note over R, W: Asynchronous Processing
     R->>W: 5. Dequeue Task
-    W->>W: 6. Clean Data & Detect Anomalies
+    Note over W: 6. Clean Data & Detect Anomalies
     W->>L: 7. Batch LLM Calls
     L-->>W: Return Categories
     W->>D: 8. Insert Cleaned Transactions
