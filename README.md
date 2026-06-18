@@ -87,23 +87,23 @@ sequenceDiagram
     participant W as Celery Worker
     participant L as Groq API
 
-    U->>A: 1. POST /jobs/upload (CSV)
-    A->>D: 2. Save Job Record (pending)
-    A->>R: 3. Enqueue Task
-    A-->>U: 4. Return job_id
+    U->>A: POST /jobs/upload (CSV)
+    A->>D: Save Job Record (pending)
+    A->>R: Enqueue Task
+    A-->>U: Return job_id
     
     Note over R, W: Asynchronous Processing
-    R->>W: 5. Dequeue Task
-    Note over W: 6. Clean Data & Detect Anomalies
-    W->>L: 7. Batch LLM Calls
+    R->>W: Dequeue Task
+    Note over W: Clean Data & Detect Anomalies
+    W->>L: Batch LLM Calls
     L-->>W: Return Categories
-    W->>D: 8. Insert Cleaned Transactions
-    W->>L: 9. Generate Narrative Summary
+    W->>D: Insert Cleaned Transactions
+    W->>L: Generate Narrative Summary
     L-->>W: Return Summary JSON
-    W->>D: 10. Save JobSummary & Update Job (completed)
+    W->>D: Save JobSummary & Update Job (completed)
     
-    U->>A: 11. GET /jobs/{job_id}/results
-    A->>D: 12. Fetch Status & Results
+    U->>A: GET /jobs/{job_id}/results
+    A->>D: Fetch Status & Results
     D-->>A: Return Data
     A-->>U: Return Final JSON Response
 ```
