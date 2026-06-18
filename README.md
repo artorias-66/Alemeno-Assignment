@@ -79,21 +79,33 @@ curl -X GET "http://localhost:8000/jobs?status=completed" -H "accept: applicatio
 You can view the high-level architecture diagram below (Mermaid format). You can paste this into [Mermaid Live Editor](https://mermaid.live/) or draw.io to visualize it.
 
 ```mermaid
-graph TD
-    User([User / Client]) -->|1. Upload CSV POST /jobs/upload| API[FastAPI Server]
-    API -->|2. Save Job Record| DB[(PostgreSQL Database)]
-    API -->|3. Enqueue Task| Redis[(Redis Broker)]
-    API -.->|4. Return job_id| User
-    
-    Worker[Celery Worker] -->|5. Dequeue Task| Redis
-    Worker -->|6. Data Cleaning & Anomaly Detection| Worker
-    Worker <-->|7. Batch LLM Calls| LLM[Groq API]
-    Worker -->|8. Update Job & Transactions| DB
-    Worker <-->|9. Generate Narrative Summary| LLM
-    Worker -->|10. Save JobSummary| DB
+sequenceDiagram
+    participant U as User / Client
+    participant A as FastAPI Server
+    participant D as PostgreSQL DB
+    participant R as Redis Broker
+    participant W as Celery Worker
+    participant L as Groq API
 
-    User -->|"11. Poll Status GET /jobs/{job_id}/status"| API
-    API -->|12. Fetch Status| DB
+    U->>A: 1. POST /jobs/upload (CSV)
+    A->>D: 2. Save Job Record (pending)
+    A->>R: 3. Enqueue Task
+    A-->>U: 4. Return job_id
+    
+    Note over R, W: Asynchronous Processing
+    R->>W: 5. Dequeue Task
+    W->>W: 6. Clean Data & Detect Anomalies
+    W->>L: 7. Batch LLM Calls
+    L-->>W: Return Categories
+    W->>D: 8. Insert Cleaned Transactions
+    W->>L: 9. Generate Narrative Summary
+    L-->>W: Return Summary JSON
+    W->>D: 10. Save JobSummary & Update Job (completed)
+    
+    U->>A: 11. GET /jobs/{job_id}/results
+    A->>D: 12. Fetch Status & Results
+    D-->>A: Return Data
+    A-->>U: Return Final JSON Response
 ```
 
 ## System Design & Choices
