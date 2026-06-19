@@ -1,5 +1,7 @@
 # AI-Powered Transaction Processing Pipeline
 
+🚀 **Live Interactive Demo**: [https://alemeno-assignment-bf4i.onrender.com/docs](https://alemeno-assignment-bf4i.onrender.com/docs)
+
 This repository contains the backend implementation for an asynchronous transaction processing pipeline. The pipeline accepts a CSV file containing raw financial transactions, processes it using a background job queue to clean data, flags anomalies, and leverages a Large Language Model (Groq's Llama-3.1-8b-instant) to classify transactions and generate a narrative summary.
 
 ## Tech Stack
