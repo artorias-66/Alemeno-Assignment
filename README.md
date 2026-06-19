@@ -101,12 +101,12 @@ You can view the high-level architecture diagram below (Mermaid format). You can
 
 ```mermaid
 sequenceDiagram
-    participant "U" as User / Client
-    participant "A" as FastAPI Server
-    participant "D" as PostgreSQL DB
-    participant "R" as Redis Broker
-    participant "W" as Celery Worker
-    participant "L" as Groq API
+    participant U as User / Client
+    participant A as FastAPI Server
+    participant D as PostgreSQL DB
+    participant R as Redis Broker
+    participant W as Celery Worker
+    participant L as Groq API
 
     U->>A: POST /jobs/upload (CSV)
     A->>D: Save Job Record (pending)
