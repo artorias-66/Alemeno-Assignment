@@ -113,3 +113,11 @@ sequenceDiagram
 - **Celery + Redis:** Industry-standard for robust, resilient asynchronous task queues.
 - **PostgreSQL:** Reliable relational database suited for structured transaction and job data.
 - **Groq API:** Used `llama-3.1-8b-instant` for incredibly fast, cost-effective LLM processing, making batch calls to avoid rate limits and reduce latency.
+
+## Production Best Practices Implemented
+To ensure this application is strictly production-ready, several robust software engineering practices have been applied across the codebase:
+- **Centralized Configuration:** Adherence to the Twelve-Factor App methodology using `pydantic-settings` to manage environment variables gracefully in `config.py`.
+- **Advanced Data Engineering:** The anomaly detection pipeline leverages purely vectorized operations in Pandas/NumPy (avoiding `iterrows`) to achieve maximum performance across massive datasets.
+- **Strict Typing & Documentation:** Comprehensive Python Type Hinting and Google-style docstrings are applied systematically to improve IDE support and team maintainability.
+- **Observability:** Complete integration with Python's standard `logging` library ensures high visibility into Celery tasks, combined with a global FastAPI exception handler to gracefully trap and manage 500-level errors.
+- **Security-First Docker:** The Dockerfile executes the application strictly as a newly created non-root user (`alemeno`) and utilizes `.dockerignore` to secure build contexts and protect sensitive API keys.
