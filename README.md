@@ -121,3 +121,4 @@ To ensure this application is strictly production-ready, several robust software
 - **Strict Typing & Documentation:** Comprehensive Python Type Hinting and Google-style docstrings are applied systematically to improve IDE support and team maintainability.
 - **Observability:** Complete integration with Python's standard `logging` library ensures high visibility into Celery tasks, combined with a global FastAPI exception handler to gracefully trap and manage 500-level errors.
 - **Security-First Docker:** The Dockerfile executes the application strictly as a newly created non-root user (`alemeno`) and utilizes `.dockerignore` to secure build contexts and protect sensitive API keys.
+- **Continuous Integration (CI):** A GitHub Actions pipeline is configured to automatically validate Docker Compose configurations and verify that container images build successfully on every push, ensuring the main branch remains deployable.
