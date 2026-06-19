@@ -101,12 +101,12 @@ You can view the high-level architecture diagram below (Mermaid format). You can
 
 ```mermaid
 sequenceDiagram
-    participant U as User / Client
-    participant A as FastAPI Server
-    participant D as PostgreSQL DB
-    participant R as Redis Broker
-    participant W as Celery Worker
-    participant L as Groq API
+    participant "U" as User / Client
+    participant "A" as FastAPI Server
+    participant "D" as PostgreSQL DB
+    participant "R" as Redis Broker
+    participant "W" as Celery Worker
+    participant "L" as Groq API
 
     U->>A: POST /jobs/upload (CSV)
     A->>D: Save Job Record (pending)
@@ -127,6 +127,51 @@ sequenceDiagram
     A->>D: Fetch Status & Results
     D-->>A: Return Data
     A-->>U: Return Final JSON Response
+```
+
+### Deployment Topology (Local vs Production)
+```mermaid
+flowchart TB
+    subgraph Local ["Local (docker-compose)"]
+        direction TB
+        api_local["FastAPI<br/>(:8000)"]
+        worker_local["Celery<br/>Worker"]
+        redis_local[("Redis<br/>Container")]
+        db_local[("Postgres<br/>Container")]
+        groq_local{{"Groq API"}}
+        
+        api_local -->|Enqueues| redis_local
+        worker_local -->|Consumes| redis_local
+        api_local -->|Reads/Writes| db_local
+        worker_local -->|Reads/Writes| db_local
+        
+        worker_local -.->|Sync HTTP| groq_local
+    end
+
+    subgraph Production ["Production (Serverless)"]
+        direction TB
+        
+        subgraph Render ["Render Container"]
+            direction TB
+            start_sh{"start.sh"}
+            api_prod["FastAPI<br/>(Foreground)"]
+            worker_prod["Celery<br/>(Background)"]
+            
+            start_sh ==> api_prod
+            start_sh ==> worker_prod
+        end
+        
+        redis_prod[("Upstash<br/>Redis")]
+        db_prod[("Neon<br/>Postgres")]
+        groq_prod{{"Groq API"}}
+        
+        api_prod -->|Enqueues| redis_prod
+        worker_prod -->|Consumes| redis_prod
+        api_prod -->|Reads/Writes| db_prod
+        worker_prod -->|Reads/Writes| db_prod
+        
+        worker_prod -.->|Sync HTTP| groq_prod
+    end
 ```
 
 ## System Design & Choices
