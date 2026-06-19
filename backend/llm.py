@@ -4,14 +4,13 @@ import time
 import logging
 from typing import List, Dict, Any
 from groq import Groq
+from config import settings
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Initialize the Groq client
-# Requires GROQ_API_KEY environment variable
 def get_client():
-    api_key = os.getenv("GROQ_API_KEY")
+    api_key = settings.GROQ_API_KEY
     if not api_key:
         logger.warning("GROQ_API_KEY is not set. LLM features will fail.")
         return None
@@ -50,23 +49,7 @@ def classify_transactions_batch(transactions: List[Dict[str, Any]]) -> List[Dict
     
     # Send minimal data to save tokens
     batch_data = [{"txn_id": t.get('id'), "merchant": t.get('merchant'), "notes": t.get('notes')} for t in transactions]
-    prompt += json.dumps(batch_data)
-
-    def _call_llm():
-        response = client.chat.completions.create(
-            model="llama-3.1-8b-instant",
-            messages=[
-                {"role": "system", "content": "You are a transaction classification assistant. Output ONLY valid JSON array."},
-                {"role": "user", "content": prompt}
-            ],
-            response_format={"type": "json_object"}
-        )
-        # We need to ensure it's a JSON array format
-        # Actually response_format={"type": "json_object"} forces a JSON object.
-        # We'll adjust prompt to ask for an object containing the array.
-        pass
-
-    # Let's adjust the nested function slightly to handle the JSON object requirement of Groq.
+    
     prompt = (
         "Classify the following transactions into one of these exact categories: "
         "Food, Shopping, Travel, Transport, Utilities, Cash Withdrawal, Entertainment, Other.\n"

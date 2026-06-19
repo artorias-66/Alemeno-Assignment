@@ -1,7 +1,8 @@
 import pandas as pd
 import numpy as np
+from config import settings
 
-DOMESTIC_BRANDS = ["swiggy", "ola", "irctc", "zomato", "paytm", "bms", "bookmyshow"]
+DOMESTIC_BRANDS = settings.DOMESTIC_BRANDS
 
 def clean_data(file_path: str) -> pd.DataFrame:
     # Read CSV
@@ -49,37 +50,54 @@ def clean_data(file_path: str) -> pd.DataFrame:
     return df
 
 def detect_anomalies(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Detects anomalous transactions using vectorized Pandas operations.
+    Rules:
+    1. Amount > 3x the account's median amount.
+    2. Currency is USD but merchant is a domestic brand.
+
+    Args:
+        df (pd.DataFrame): Cleaned transactions DataFrame.
+
+    Returns:
+        pd.DataFrame: DataFrame with 'is_anomaly' and 'anomaly_reason' columns.
+    """
     df['is_anomaly'] = False
     df['anomaly_reason'] = None
 
+    if df.empty:
+        return df
+
     # 1. Flag amount > 3x the account's median
-    account_medians = df.groupby('account_id')['amount'].median()
-    
-    for idx, row in df.iterrows():
-        account_id = row['account_id']
-        amount = row['amount']
-        merchant = str(row['merchant']).lower() if row['merchant'] else ""
-        currency = row['currency']
+    if 'account_id' in df.columns and 'amount' in df.columns:
+        medians = df.groupby('account_id')['amount'].transform('median')
+        amount_mask = (df['amount'] > 3 * medians) & (medians > 0)
         
-        is_anomaly = False
-        reasons = []
+        df.loc[amount_mask, 'is_anomaly'] = True
+        df.loc[amount_mask, 'anomaly_reason'] = (
+            "Amount " + df.loc[amount_mask, 'amount'].astype(str) + 
+            " is > 3x account median " + medians[amount_mask].astype(str)
+        )
 
-        if account_id in account_medians and pd.notnull(amount):
-            median = account_medians[account_id]
-            if median > 0 and amount > 3 * median:
-                is_anomaly = True
-                reasons.append(f"Amount {amount} is > 3x account median {median}")
-
-        # 2. Flag USD currency for domestic-only brand
-        if currency == "USD":
-            for brand in DOMESTIC_BRANDS:
-                if brand in merchant:
-                    is_anomaly = True
-                    reasons.append(f"USD currency used for domestic brand {brand}")
-                    break
+    # 2. Flag USD currency for domestic-only brand
+    if 'currency' in df.columns and 'merchant' in df.columns:
+        usd_mask = df['currency'] == 'USD'
+        merchant_str = df['merchant'].fillna('').astype(str).str.lower()
         
-        if is_anomaly:
-            df.at[idx, 'is_anomaly'] = True
-            df.at[idx, 'anomaly_reason'] = "; ".join(reasons)
+        pattern = '|'.join(settings.DOMESTIC_BRANDS)
+        domestic_mask = merchant_str.str.contains(pattern, regex=True, na=False)
+        
+        currency_mask = usd_mask & domestic_mask
+        
+        df.loc[currency_mask, 'is_anomaly'] = True
+        
+        # Append reason safely
+        new_reason = "USD currency used for domestic brand"
+        existing_reasons = df.loc[currency_mask, 'anomaly_reason']
+        df.loc[currency_mask, 'anomaly_reason'] = np.where(
+            existing_reasons.isnull(),
+            new_reason,
+            existing_reasons.astype(str) + "; " + new_reason
+        )
 
     return df

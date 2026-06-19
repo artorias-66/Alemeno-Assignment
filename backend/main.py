@@ -9,6 +9,11 @@ from database import engine, Base, get_db
 from models import Job, Transaction, JobSummary
 from schemas import JobResponse, JobStatusResponse, JobResultResponse, JobListResponse, JobSummarySchema, TransactionSchema
 from tasks import process_transactions_csv
+import logging
+from fastapi.responses import JSONResponse
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -18,11 +23,19 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="AI-Powered Transaction Processing Pipeline", lifespan=lifespan)
 
+@app.exception_handler(Exception)
+async def global_exception_handler(request, exc: Exception):
+    logger.error(f"Unhandled exception: {exc}", exc_info=True)
+    return JSONResponse(status_code=500, content={"detail": "Internal server error occurred. Please check logs."})
+
 UPLOAD_DIR = "/app/uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 @app.post("/jobs/upload", response_model=JobResponse)
 async def upload_csv(file: UploadFile = File(...), db: Session = Depends(get_db)):
+    """
+    Uploads a CSV file of transactions, saves it, and enqueues a background job to process it.
+    """
     if not file.filename.endswith('.csv'):
         raise HTTPException(status_code=400, detail="Only CSV files are supported.")
     
@@ -44,6 +57,9 @@ async def upload_csv(file: UploadFile = File(...), db: Session = Depends(get_db)
 
 @app.get("/jobs/{job_id}/status", response_model=JobStatusResponse)
 def get_job_status(job_id: str, db: Session = Depends(get_db)):
+    """
+    Retrieves the current status of a background job. If completed, includes the generated summary.
+    """
     job = db.query(Job).filter(Job.id == job_id).first()
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
@@ -64,6 +80,9 @@ def get_job_status(job_id: str, db: Session = Depends(get_db)):
 
 @app.get("/jobs/{job_id}/results", response_model=JobResultResponse)
 def get_job_results(job_id: str, db: Session = Depends(get_db)):
+    """
+    Retrieves the full processing results for a completed job, including all cleaned transactions, anomalies, and summary.
+    """
     job = db.query(Job).filter(Job.id == job_id).first()
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
@@ -127,6 +146,9 @@ def get_job_results(job_id: str, db: Session = Depends(get_db)):
 
 @app.get("/jobs", response_model=List[JobListResponse])
 def list_jobs(status: Optional[str] = None, db: Session = Depends(get_db)):
+    """
+    Lists all jobs, optionally filtering by status (e.g., 'pending', 'completed').
+    """
     query = db.query(Job)
     if status:
         query = query.filter(Job.status == status)

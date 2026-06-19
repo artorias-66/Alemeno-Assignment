@@ -9,27 +9,40 @@ from database import SessionLocal
 from models import Job, Transaction, JobSummary
 from utils import clean_data, detect_anomalies
 from llm import classify_transactions_batch, generate_narrative_summary
+from config import settings
 
-BATCH_SIZE = 20
+BATCH_SIZE = settings.BATCH_SIZE
+
+import logging
+
+logger = logging.getLogger(__name__)
 
 @celery.task(bind=True)
 def process_transactions_csv(self, job_id: str, file_path: str):
+    """
+    Celery background task to process the uploaded CSV file.
+    It cleans data, detects anomalies, calls the LLM for missing categories,
+    and generates a narrative summary.
+    """
     db: Session = SessionLocal()
     job = db.query(Job).filter(Job.id == job_id).first()
     
     if not job:
         db.close()
+        logger.error(f"Job {job_id} not found in database.")
         return f"Job {job_id} not found."
     
     try:
         job.status = "processing"
         db.commit()
 
+        logger.info(f"Job {job_id}: Starting data cleaning on {file_path}")
         # Step 1: Data Cleaning
         df = clean_data(file_path)
         job.row_count_raw = len(pd.read_csv(file_path))
         job.row_count_clean = len(df)
         
+        logger.info(f"Job {job_id}: Data cleaning complete. Raw rows: {job.row_count_raw}, Clean rows: {job.row_count_clean}. Starting anomaly detection.")
         # Step 2: Anomaly Detection
         df = detect_anomalies(df)
 
@@ -37,6 +50,7 @@ def process_transactions_csv(self, job_id: str, file_path: str):
         
         # Step 3: LLM Classification (Batching)
         uncategorized = [t for t in transactions_data if t.get('category') == 'Uncategorised']
+        logger.info(f"Job {job_id}: Found {len(uncategorized)} uncategorized transactions. Starting LLM classification.")
         
         # We need a temporary id to map back results
         for idx, t in enumerate(uncategorized):
@@ -45,6 +59,7 @@ def process_transactions_csv(self, job_id: str, file_path: str):
         categorized_results = []
         for i in range(0, len(uncategorized), BATCH_SIZE):
             batch = uncategorized[i:i+BATCH_SIZE]
+            logger.info(f"Job {job_id}: Processing LLM batch {i//BATCH_SIZE + 1}/{(len(uncategorized) + BATCH_SIZE - 1)//BATCH_SIZE}")
             processed_batch = classify_transactions_batch(batch)
             categorized_results.extend(processed_batch)
             
@@ -52,12 +67,9 @@ def process_transactions_csv(self, job_id: str, file_path: str):
         cat_map = {t['id']: t for t in categorized_results if 'id' in t}
         for t in transactions_data:
             if t.get('category') == 'Uncategorised':
-                # find map
-                # for simple mapping, we search by original values but adding a custom 'temp_id' is safer.
-                # Since we already mutated the dictionaries in the list directly (pass by reference in python),
-                # transactions_data elements should already be updated with 'llm_category' and 'llm_failed'.
                 pass
                 
+        logger.info(f"Job {job_id}: Saving {len(transactions_data)} transactions to database.")
         # Insert Transactions into DB
         db_transactions = []
         for t in transactions_data:
@@ -83,8 +95,8 @@ def process_transactions_csv(self, job_id: str, file_path: str):
         db.bulk_save_objects(db_transactions)
         db.commit()
 
+        logger.info(f"Job {job_id}: Generating narrative summary.")
         # Step 4: LLM Narrative Summary
-        # Prepare data for summary
         summary_data = generate_narrative_summary(transactions_data)
         
         if summary_data:
@@ -103,9 +115,11 @@ def process_transactions_csv(self, job_id: str, file_path: str):
         job.status = "completed"
         job.completed_at = datetime.utcnow()
         db.commit()
+        logger.info(f"Job {job_id}: Successfully completed.")
         
     except Exception as e:
         db.rollback()
+        logger.error(f"Job {job_id}: Failed during processing with error: {str(e)}", exc_info=True)
         job.status = "failed"
         job.error_message = str(e)
         job.completed_at = datetime.utcnow()

@@ -2,6 +2,9 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
+# Add non-root user for security best practices
+RUN groupadd -r alemeno && useradd -r -g alemeno alemeno
+
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
@@ -14,3 +17,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
+
+# Change ownership of app directory and switch to non-root user
+RUN chown -R alemeno:alemeno /app
+USER alemeno
