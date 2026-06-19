@@ -15,15 +15,19 @@ This repository contains the backend implementation for an asynchronous transact
 
 ## Setup Instructions
 
-### Option 1: Deploy for Free on Render
-You can host this entire architecture 100% for free on Render using a clever container hack:
-1. Create a **Free PostgreSQL Database** on Render.
-2. Create a **Free Redis Instance** on Render.
-3. Create a **New Web Service** pointing to this GitHub repository.
+### Option 1: Deploy for Free using the "Serverless Stack"
+You can host this entire architecture 100% for free indefinitely by using specialized serverless providers combined with a clever container hack:
+1. Create a **Free PostgreSQL Database** on [Neon.tech](https://neon.tech/) and copy your Connection String.
+2. Create a **Free Redis Instance** on [Upstash](https://upstash.com/) and copy your Redis URL (ensure it starts with `rediss://` for secure TLS).
+3. Create a **New Web Service (Free Tier)** on [Render](https://render.com/) pointing to this GitHub repository.
 4. Set the Docker Build Context to `.` and the Dockerfile path to `backend/Dockerfile`.
-5. Add the environment variables (`DATABASE_URL`, `CELERY_BROKER_URL`, `CELERY_RESULT_BACKEND`, and `GROQ_API_KEY`). 
+5. Add your Environment Variables to the Render Web Service:
+   - `DATABASE_URL`: Your Neon Postgres URL
+   - `CELERY_BROKER_URL`: Your Upstash Redis URL
+   - `CELERY_RESULT_BACKEND`: Your Upstash Redis URL
+   - `GROQ_API_KEY`: Your Groq API Key
 
-*(Note: The `Dockerfile` uses a custom `start.sh` script to run both the Celery worker and the FastAPI server concurrently inside the exact same free Web Service container, bypassing the need to pay for a separate worker!)*
+*(Note: The `Dockerfile` uses a custom `start.sh` script to run both the Celery worker and the FastAPI server concurrently inside the exact same free Web Service container, completely bypassing the need to pay for a separate worker!)*
 
 ### Option 2: Local Development
 1. Clone the repository and navigate to the root directory.
