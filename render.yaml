@@ -1,0 +1,62 @@
+databases:
+  - name: alemeno-db
+    databaseName: alemeno
+    user: alemeno_user
+    plan: free
+
+services:
+  - type: redis
+    name: alemeno-redis
+    plan: free
+    ipAllowList: [] # Allows internal connections only by default
+
+  - type: web
+    name: alemeno-api
+    env: docker
+    dockerContext: .
+    dockerfilePath: backend/Dockerfile
+    plan: free
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: alemeno-db
+          property: connectionString
+      - key: CELERY_BROKER_URL
+        fromService:
+          type: redis
+          name: alemeno-redis
+          property: connectionString
+      - key: CELERY_RESULT_BACKEND
+        fromService:
+          type: redis
+          name: alemeno-redis
+          property: connectionString
+      - key: GROQ_API_KEY
+        sync: false # Requires manual entry in the Render dashboard
+
+  - type: worker
+    name: alemeno-worker
+    env: docker
+    dockerContext: .
+    dockerfilePath: backend/Dockerfile
+    dockerCommand: celery -A celery_app.celery worker --loglevel=info
+    # Note: Render does not have a free tier for Background Workers.
+    # It will use the cheapest paid tier (approx $7/mo) automatically if deployed.
+    plan: starter
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: alemeno-db
+          property: connectionString
+      - key: CELERY_BROKER_URL
+        fromService:
+          type: redis
+          name: alemeno-redis
+          property: connectionString
+      - key: CELERY_RESULT_BACKEND
+        fromService:
+          type: redis
+          name: alemeno-redis
+          property: connectionString
+      - key: GROQ_API_KEY
+        sync: false

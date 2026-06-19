@@ -15,6 +15,12 @@ This repository contains the backend implementation for an asynchronous transact
 
 ## Setup Instructions
 
+### Option 1: 1-Click Cloud Deployment
+You can deploy this entire stack (FastAPI, Celery, Redis, PostgreSQL) directly to Render in one click:
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy)
+
+### Option 2: Local Development
 1. Clone the repository and navigate to the root directory.
 2. Ensure you have the `transactions.csv` file available (place it in the root if necessary, though it is mounted dynamically in the endpoints).
 3. Export your Groq API key as an environment variable in your terminal:
