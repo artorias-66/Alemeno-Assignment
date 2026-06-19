@@ -20,7 +20,7 @@ You can host this entire architecture 100% for free indefinitely by using specia
 1. Create a **Free PostgreSQL Database** on [Neon.tech](https://neon.tech/) and copy your Connection String.
 2. Create a **Free Redis Instance** on [Upstash](https://upstash.com/) and copy your Redis URL (ensure it starts with `rediss://` for secure TLS).
 3. Create a **New Web Service (Free Tier)** on [Render](https://render.com/) pointing to this GitHub repository.
-4. Set the Docker Build Context to `backend` and the Dockerfile path to `Dockerfile`.
+4. Set the Docker Build Context to `.` and the Dockerfile path to `backend/Dockerfile`.
 5. Add your Environment Variables to the Render Web Service:
    - `DATABASE_URL`: Your Neon Postgres URL
    - `CELERY_BROKER_URL`: Your Upstash Redis URL
