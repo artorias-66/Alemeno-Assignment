@@ -56,6 +56,10 @@ The API will automatically create the required database tables on startup.
 
 ## API Endpoints & Example cURL Requests
 
+**Interactive Documentation:**
+FastAPI automatically generates a fully interactive Swagger UI for testing endpoints directly from your browser! Once the server is running, simply navigate to:
+👉 **[http://localhost:8000/docs](http://localhost:8000/docs)**
+
 ### 1. Upload CSV & Start Job
 ```bash
 curl -X POST "http://localhost:8000/jobs/upload" \
