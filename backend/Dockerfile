@@ -19,5 +19,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Change ownership of app directory and switch to non-root user
-RUN chown -R alemeno:alemeno /app
+RUN chmod +x start.sh && chown -R alemeno:alemeno /app
 USER alemeno
+
+CMD ["./start.sh"]
