@@ -64,11 +64,10 @@ def process_transactions_csv(self, job_id: str, file_path: str):
             categorized_results.extend(processed_batch)
             
         # Merge back
-        cat_map = {t['id']: t for t in categorized_results if 'id' in t}
+        # Ensure the LLM's classification overwrites the 'Uncategorised' placeholder
         for t in transactions_data:
-            if t.get('category') == 'Uncategorised':
-                pass
-                
+            if t.get('category') == 'Uncategorised' and t.get('llm_category'):
+                t['category'] = t['llm_category']
         logger.info(f"Job {job_id}: Saving {len(transactions_data)} transactions to database.")
         # Insert Transactions into DB
         db_transactions = []
