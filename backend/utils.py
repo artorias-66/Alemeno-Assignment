@@ -28,7 +28,13 @@ def clean_data(file_path: str) -> Tuple[pd.DataFrame, int]:
 
     # Normalise dates to ISO 8601 (handles DD-MM-YYYY and YYYY/MM/DD)
     if 'date' in df.columns:
-        df['date'] = pd.to_datetime(df['date'], format='mixed', dayfirst=True, errors='coerce').dt.date
+        date_str = df['date'].astype(str)
+        # Explicit formats first to avoid cross-platform ambiguity in format='mixed'
+        d1 = pd.to_datetime(date_str, format='%d-%m-%Y', errors='coerce')
+        d2 = pd.to_datetime(date_str, format='%Y/%m/%d', errors='coerce')
+        d3 = pd.to_datetime(date_str, format='%Y-%m-%d', errors='coerce')
+        d4 = pd.to_datetime(date_str, format='mixed', dayfirst=True, errors='coerce')
+        df['date'] = d1.fillna(d2).fillna(d3).fillna(d4).dt.date
 
     # Strip currency symbols and convert amount to numeric
     if 'amount' in df.columns:
