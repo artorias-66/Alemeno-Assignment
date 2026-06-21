@@ -97,7 +97,9 @@ curl -X GET "http://localhost:8000/jobs?status=completed" -H "accept: applicatio
 ```
 
 ## High-Level Architecture
-You can view the high-level architecture diagram below (Mermaid format). You can paste this into [Mermaid Live Editor](https://mermaid.live/) or draw.io to visualize it.
+📐 **[View / Edit Architecture Diagram on draw.io](https://app.diagrams.net/#Uhttps://raw.githubusercontent.com/artorias-66/Alemeno-Assignment/main/docs/architecture.drawio)**
+
+You can also view the request lifecycle as a Mermaid sequence diagram below, or paste either into [Mermaid Live Editor](https://mermaid.live/).
 
 ```mermaid
 sequenceDiagram

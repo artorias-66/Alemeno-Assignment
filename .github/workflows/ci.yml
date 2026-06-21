@@ -7,8 +7,33 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build-and-test:
+  unit-tests:
     runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+
+    - name: Install test dependencies
+      run: pip install pandas numpy pytest pydantic pydantic-settings
+
+    - name: Run unit tests
+      working-directory: backend
+      env:
+        GROQ_API_KEY: "test-key-not-needed-for-unit-tests"
+        DATABASE_URL: "postgresql://user:password@localhost:5432/alemeno"
+        CELERY_BROKER_URL: "redis://localhost:6379/0"
+        CELERY_RESULT_BACKEND: "redis://localhost:6379/0"
+      run: python -m pytest tests/ -v
+
+  build:
+    runs-on: ubuntu-latest
+    needs: unit-tests
 
     steps:
     - name: Checkout Repository
@@ -27,4 +52,4 @@ jobs:
       uses: psf/black@stable
       with:
         options: "--check --diff backend/"
-      continue-on-error: true # Non-blocking for now, just to show intent
+      continue-on-error: true

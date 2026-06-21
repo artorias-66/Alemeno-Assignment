@@ -40,7 +40,6 @@ class Transaction(Base):
     is_anomaly = Column(Boolean, default=False)
     anomaly_reason = Column(String, nullable=True)
     llm_category = Column(String, nullable=True)
-    llm_raw_response = Column(Text, nullable=True)
     llm_failed = Column(Boolean, default=False)
 
     job = relationship("Job", back_populates="transactions")
