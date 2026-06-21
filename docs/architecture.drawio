@@ -73,31 +73,37 @@
     <!-- HORIZONTAL EDGES — Row 1                                   -->
     <!-- ════════════════════════════════════════════════════════════ -->
 
-    <!-- 1. Client → FastAPI : POST /jobs/upload  (top lane, solid) -->
+    <!-- 1. Client → FastAPI : POST /jobs/upload  (top lane) -->
     <mxCell id="e1" value="POST /jobs/upload"
-      style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=11;
-             exitX=1;exitY=0.3;exitPerimeter=0;
-             entryX=0;entryY=0.3;entryPerimeter=0;"
+      style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=11;exitX=1;exitY=0.25;entryX=0;entryY=0.25;"
       edge="1" source="client" target="api" parent="1">
-      <mxGeometry relative="1" as="geometry" />
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="220" y="202" />
+        </Array>
+      </mxGeometry>
     </mxCell>
 
-    <!-- 2. FastAPI → Client : return job_id  (middle lane, dashed) -->
-    <mxCell id="e2" value="return job_id"
-      style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=11;dashed=1;strokeColor=#666;
-             exitX=0;exitY=0.5;exitPerimeter=0;
-             entryX=1;entryY=0.5;entryPerimeter=0;"
+    <!-- 2. FastAPI → Client : return job_id  (middle lane) -->
+    <mxCell id="e2" value="return job_id (async)"
+      style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=11;dashed=1;strokeColor=#666;exitX=0;exitY=0.5;entryX=1;entryY=0.5;"
       edge="1" source="api" target="client" parent="1">
-      <mxGeometry relative="1" as="geometry" />
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="220" y="220" />
+        </Array>
+      </mxGeometry>
     </mxCell>
 
-    <!-- 3. Client → FastAPI : GET /jobs/{id}/results  (bottom lane, dashed) -->
+    <!-- 3. Client → FastAPI : GET /jobs/{id}/results  (bottom lane) -->
     <mxCell id="e3" value="GET /jobs/{id}/results"
-      style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=11;dashed=1;strokeColor=#666;
-             exitX=1;exitY=0.75;exitPerimeter=0;
-             entryX=0;entryY=0.75;entryPerimeter=0;"
+      style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=11;dashed=1;strokeColor=#666;exitX=1;exitY=0.75;entryX=0;entryY=0.75;"
       edge="1" source="client" target="api" parent="1">
-      <mxGeometry relative="1" as="geometry" />
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="220" y="238" />
+        </Array>
+      </mxGeometry>
     </mxCell>
 
     <!-- 4. FastAPI → Redis : enqueue task -->
