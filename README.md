@@ -97,9 +97,11 @@ curl -X GET "http://localhost:8000/jobs?status=completed" -H "accept: applicatio
 ```
 
 ## High-Level Architecture
-📐 **[View / Edit Architecture Diagram on draw.io](https://app.diagrams.net/#Uhttps://raw.githubusercontent.com/artorias-66/Alemeno-Assignment/main/docs/architecture.drawio)**
+📐 **[Architecture Diagram (draw.io)](https://app.diagrams.net/#Uhttps://raw.githubusercontent.com/artorias-66/Alemeno-Assignment/main/docs/architecture.drawio)** — component topology and deployment layout
 
-You can also view the request lifecycle as a Mermaid sequence diagram below, or paste either into [Mermaid Live Editor](https://mermaid.live/).
+📋 **[Endpoint Flow Diagram (draw.io)](https://app.diagrams.net/#Uhttps://raw.githubusercontent.com/artorias-66/Alemeno-Assignment/main/docs/endpoints_flow.drawio)** — request/response flow for all 4 API endpoints
+
+You can also view the request lifecycle as a Mermaid sequence diagram below.
 
 ```mermaid
 sequenceDiagram

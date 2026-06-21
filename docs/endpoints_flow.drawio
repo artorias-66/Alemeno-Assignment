@@ -1,0 +1,283 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Endpoint Flow Diagram — AI-Powered Transaction Processing Pipeline
+  Four vertical swimlane columns, one per endpoint.
+  All arrows are strictly vertical within each lane; no cross-lane routing.
+  Open at: https://app.diagrams.net
+-->
+<mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1"
+              connect="1" arrows="1" fold="1" page="1" pageScale="1"
+              pageWidth="1700" pageHeight="1000" math="0" shadow="0">
+  <root>
+    <mxCell id="0" />
+    <mxCell id="1" parent="0" />
+
+    <!-- ══════════════════════════════════════════════════════════════ -->
+    <!-- TITLE                                                         -->
+    <!-- ══════════════════════════════════════════════════════════════ -->
+    <mxCell id="title"
+      value="API Endpoint Flow — AI-Powered Transaction Processing Pipeline"
+      style="text;html=1;strokeColor=none;fillColor=none;align=center;fontSize=18;fontStyle=1;"
+      vertex="1" parent="1">
+      <mxGeometry x="150" y="18" width="1380" height="36" as="geometry" />
+    </mxCell>
+
+    <!-- ══════════════════════════════════════════════════════════════ -->
+    <!-- LANE 1 — POST /jobs/upload                                   -->
+    <!-- ══════════════════════════════════════════════════════════════ -->
+    <mxCell id="lane1"
+      value="POST /jobs/upload"
+      style="swimlane;startSize=36;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=14;fontStyle=1;horizontal=1;"
+      vertex="1" parent="1">
+      <mxGeometry x="20" y="64" width="370" height="870" as="geometry" />
+    </mxCell>
+
+    <mxCell id="l1_c" value="Client"
+      style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;fontStyle=1;"
+      vertex="1" parent="lane1">
+      <mxGeometry x="135" y="52" width="100" height="40" as="geometry" />
+    </mxCell>
+
+    <mxCell id="l1_v" value="Validate .csv extension"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#555;fontSize=11;"
+      vertex="1" parent="lane1">
+      <mxGeometry x="85" y="125" width="200" height="36" as="geometry" />
+    </mxCell>
+
+    <mxCell id="l1_s" value="Save file to /app/uploads"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#555;fontSize=11;"
+      vertex="1" parent="lane1">
+      <mxGeometry x="85" y="195" width="200" height="36" as="geometry" />
+    </mxCell>
+
+    <mxCell id="l1_db" value="Create Job record (status=pending)"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#555;fontSize=11;"
+      vertex="1" parent="lane1">
+      <mxGeometry x="85" y="265" width="200" height="36" as="geometry" />
+    </mxCell>
+
+    <mxCell id="l1_q" value="Enqueue Celery task"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#555;fontSize=11;"
+      vertex="1" parent="lane1">
+      <mxGeometry x="85" y="335" width="200" height="36" as="geometry" />
+    </mxCell>
+
+    <mxCell id="l1_r" value='Returns {"job_id": "..."} immediately'
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;fontStyle=2;dashed=1;"
+      vertex="1" parent="lane1">
+      <mxGeometry x="85" y="405" width="200" height="36" as="geometry" />
+    </mxCell>
+
+    <!-- Background worker sub-container -->
+    <mxCell id="l1_bg"
+      value="⬇  Background Worker (async)"
+      style="swimlane;startSize=28;fillColor=#ffe6cc;strokeColor=#d79b00;dashed=1;strokeWidth=2;fontSize=11;fontStyle=3;"
+      vertex="1" parent="lane1">
+      <mxGeometry x="20" y="468" width="330" height="374" as="geometry" />
+    </mxCell>
+
+    <mxCell id="l1_bg1" value="Clean &amp; deduplicate data (Pandas)"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#888;fontSize=11;"
+      vertex="1" parent="l1_bg">
+      <mxGeometry x="65" y="38" width="200" height="34" as="geometry" />
+    </mxCell>
+    <mxCell id="l1_bg2" value="Detect anomalies (vectorized)"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#888;fontSize=11;"
+      vertex="1" parent="l1_bg">
+      <mxGeometry x="65" y="102" width="200" height="34" as="geometry" />
+    </mxCell>
+    <mxCell id="l1_bg3" value="LLM classify uncategorized (Groq)"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#888;fontSize=11;"
+      vertex="1" parent="l1_bg">
+      <mxGeometry x="65" y="166" width="200" height="34" as="geometry" />
+    </mxCell>
+    <mxCell id="l1_bg4" value="Compute aggregates (Pandas)"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#888;fontSize=11;"
+      vertex="1" parent="l1_bg">
+      <mxGeometry x="65" y="230" width="200" height="34" as="geometry" />
+    </mxCell>
+    <mxCell id="l1_bg5" value="Bulk insert to DB → mark completed"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;"
+      vertex="1" parent="l1_bg">
+      <mxGeometry x="65" y="304" width="200" height="34" as="geometry" />
+    </mxCell>
+
+    <!-- Lane 1 arrows (sync section) -->
+    <mxCell id="l1_e1" value="" style="edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" source="l1_c"  target="l1_v"  parent="lane1"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="l1_e2" value="" style="edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" source="l1_v"  target="l1_s"  parent="lane1"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="l1_e3" value="" style="edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" source="l1_s"  target="l1_db" parent="lane1"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="l1_e4" value="" style="edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" source="l1_db" target="l1_q"  parent="lane1"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="l1_e5" value="" style="edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" source="l1_q"  target="l1_r"  parent="lane1"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+    <!-- Lane 1 background worker arrows -->
+    <mxCell id="l1_b1" value="" style="edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" source="l1_bg1" target="l1_bg2" parent="l1_bg"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="l1_b2" value="" style="edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" source="l1_bg2" target="l1_bg3" parent="l1_bg"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="l1_b3" value="" style="edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" source="l1_bg3" target="l1_bg4" parent="l1_bg"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="l1_b4" value="" style="edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" source="l1_bg4" target="l1_bg5" parent="l1_bg"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+    <!-- ══════════════════════════════════════════════════════════════ -->
+    <!-- LANE 2 — GET /jobs/{job_id}/status                           -->
+    <!-- ══════════════════════════════════════════════════════════════ -->
+    <mxCell id="lane2"
+      value="GET /jobs/{job_id}/status"
+      style="swimlane;startSize=36;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=14;fontStyle=1;"
+      vertex="1" parent="1">
+      <mxGeometry x="410" y="64" width="370" height="430" as="geometry" />
+    </mxCell>
+
+    <mxCell id="l2_c" value="Client"
+      style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;fontStyle=1;"
+      vertex="1" parent="lane2">
+      <mxGeometry x="135" y="52" width="100" height="40" as="geometry" />
+    </mxCell>
+
+    <mxCell id="l2_q" value="Query DB for Job by id"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#555;fontSize=11;"
+      vertex="1" parent="lane2">
+      <mxGeometry x="85" y="128" width="200" height="36" as="geometry" />
+    </mxCell>
+
+    <mxCell id="l2_d" value="Job found?"
+      style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#555;fontSize=11;"
+      vertex="1" parent="lane2">
+      <mxGeometry x="110" y="198" width="150" height="50" as="geometry" />
+    </mxCell>
+
+    <mxCell id="l2_404" value="404 Not Found"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;fontStyle=1;"
+      vertex="1" parent="lane2">
+      <mxGeometry x="272" y="210" width="88" height="36" as="geometry" />
+    </mxCell>
+
+    <mxCell id="l2_r" value="Return status + summary&#xa;(if completed)"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;fontStyle=1;"
+      vertex="1" parent="lane2">
+      <mxGeometry x="85" y="308" width="200" height="46" as="geometry" />
+    </mxCell>
+
+    <mxCell id="l2_e1" value="" style="edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" source="l2_c" target="l2_q" parent="lane2"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="l2_e2" value="" style="edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" source="l2_q" target="l2_d" parent="lane2"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="l2_e3" value="Yes" style="edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;entryX=0.5;entryY=0;fontSize=10;" edge="1" source="l2_d" target="l2_r" parent="lane2"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="l2_e4" value="No" style="edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;entryX=0;entryY=0.5;fontSize=10;" edge="1" source="l2_d" target="l2_404" parent="lane2"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+    <!-- ══════════════════════════════════════════════════════════════ -->
+    <!-- LANE 3 — GET /jobs/{job_id}/results                          -->
+    <!-- ══════════════════════════════════════════════════════════════ -->
+    <mxCell id="lane3"
+      value="GET /jobs/{job_id}/results"
+      style="swimlane;startSize=36;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=14;fontStyle=1;"
+      vertex="1" parent="1">
+      <mxGeometry x="800" y="64" width="390" height="560" as="geometry" />
+    </mxCell>
+
+    <mxCell id="l3_c" value="Client"
+      style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;fontStyle=1;"
+      vertex="1" parent="lane3">
+      <mxGeometry x="145" y="52" width="100" height="40" as="geometry" />
+    </mxCell>
+
+    <mxCell id="l3_q" value="Query DB for Job by id"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#555;fontSize=11;"
+      vertex="1" parent="lane3">
+      <mxGeometry x="95" y="128" width="200" height="36" as="geometry" />
+    </mxCell>
+
+    <mxCell id="l3_d1" value="Job found?"
+      style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#555;fontSize=11;"
+      vertex="1" parent="lane3">
+      <mxGeometry x="120" y="198" width="150" height="50" as="geometry" />
+    </mxCell>
+
+    <mxCell id="l3_404" value="404 Not Found"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;fontStyle=1;"
+      vertex="1" parent="lane3">
+      <mxGeometry x="282" y="210" width="88" height="36" as="geometry" />
+    </mxCell>
+
+    <mxCell id="l3_d2" value="Status = completed?"
+      style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#555;fontSize=11;"
+      vertex="1" parent="lane3">
+      <mxGeometry x="110" y="290" width="170" height="50" as="geometry" />
+    </mxCell>
+
+    <mxCell id="l3_400" value="400 Not Ready"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;fontStyle=1;"
+      vertex="1" parent="lane3">
+      <mxGeometry x="292" y="302" width="88" height="36" as="geometry" />
+    </mxCell>
+
+    <mxCell id="l3_f" value="Fetch Transactions + JobSummary"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#555;fontSize=11;"
+      vertex="1" parent="lane3">
+      <mxGeometry x="95" y="382" width="200" height="36" as="geometry" />
+    </mxCell>
+
+    <mxCell id="l3_r" value="Return: cleaned_transactions,&#xa;anomalies, per_category_spend,&#xa;summary (narrative, risk_level)"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;fontStyle=1;"
+      vertex="1" parent="lane3">
+      <mxGeometry x="95" y="456" width="200" height="56" as="geometry" />
+    </mxCell>
+
+    <mxCell id="l3_e1" value="" style="edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" source="l3_c"  target="l3_q"  parent="lane3"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="l3_e2" value="" style="edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" source="l3_q"  target="l3_d1" parent="lane3"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="l3_e3" value="Yes" style="edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;entryX=0.5;entryY=0;fontSize=10;" edge="1" source="l3_d1" target="l3_d2" parent="lane3"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="l3_e4" value="No"  style="edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;entryX=0;entryY=0.5;fontSize=10;" edge="1" source="l3_d1" target="l3_404" parent="lane3"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="l3_e5" value="Yes" style="edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;entryX=0.5;entryY=0;fontSize=10;" edge="1" source="l3_d2" target="l3_f" parent="lane3"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="l3_e6" value="No"  style="edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;entryX=0;entryY=0.5;fontSize=10;" edge="1" source="l3_d2" target="l3_400" parent="lane3"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="l3_e7" value="" style="edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" source="l3_f"  target="l3_r"  parent="lane3"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+    <!-- ══════════════════════════════════════════════════════════════ -->
+    <!-- LANE 4 — GET /jobs                                           -->
+    <!-- ══════════════════════════════════════════════════════════════ -->
+    <mxCell id="lane4"
+      value="GET /jobs"
+      style="swimlane;startSize=36;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=14;fontStyle=1;"
+      vertex="1" parent="1">
+      <mxGeometry x="1210" y="64" width="370" height="370" as="geometry" />
+    </mxCell>
+
+    <mxCell id="l4_c" value="Client"
+      style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;fontStyle=1;"
+      vertex="1" parent="lane4">
+      <mxGeometry x="135" y="52" width="100" height="40" as="geometry" />
+    </mxCell>
+
+    <mxCell id="l4_f" value="Apply optional ?status= filter"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#555;fontSize=11;"
+      vertex="1" parent="lane4">
+      <mxGeometry x="85" y="128" width="200" height="36" as="geometry" />
+    </mxCell>
+
+    <mxCell id="l4_q" value="Query all Jobs (ordered by date)"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#555;fontSize=11;"
+      vertex="1" parent="lane4">
+      <mxGeometry x="85" y="198" width="200" height="36" as="geometry" />
+    </mxCell>
+
+    <mxCell id="l4_r" value="Return list of jobs&#xa;(id, filename, status, created_at)"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;fontStyle=1;"
+      vertex="1" parent="lane4">
+      <mxGeometry x="85" y="278" width="200" height="50" as="geometry" />
+    </mxCell>
+
+    <mxCell id="l4_e1" value="" style="edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" source="l4_c" target="l4_f" parent="lane4"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="l4_e2" value="" style="edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" source="l4_f" target="l4_q" parent="lane4"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="l4_e3" value="" style="edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" source="l4_q" target="l4_r" parent="lane4"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+    <!-- ══════════════════════════════════════════════════════════════ -->
+    <!-- LEGEND                                                        -->
+    <!-- ══════════════════════════════════════════════════════════════ -->
+    <mxCell id="leg_bg" value=""
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#999;"
+      vertex="1" parent="1">
+      <mxGeometry x="20" y="956" width="420" height="28" as="geometry" />
+    </mxCell>
+    <mxCell id="leg_txt"
+      value="Red box = error response  |  Coloured box = success response  |  Orange dashed section = background async work"
+      style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=11;"
+      vertex="1" parent="1">
+      <mxGeometry x="28" y="958" width="610" height="24" as="geometry" />
+    </mxCell>
+
+  </root>
+</mxGraphModel>
