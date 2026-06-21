@@ -56,5 +56,6 @@ class JobSummary(Base):
     anomaly_count = Column(Integer, nullable=True)
     narrative = Column(Text, nullable=True)
     risk_level = Column(String, nullable=True)
+    per_category_spend = Column(JSON, nullable=True)  # {category: {INR: float, USD: float}}
 
     job = relationship("Job", back_populates="summary")

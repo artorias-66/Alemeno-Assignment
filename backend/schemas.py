@@ -1,9 +1,11 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
 import datetime
 
+
 class JobResponse(BaseModel):
     job_id: str
+
 
 class JobSummarySchema(BaseModel):
     total_spend_inr: Optional[float] = None
@@ -12,10 +14,14 @@ class JobSummarySchema(BaseModel):
     anomaly_count: Optional[int] = None
     narrative: Optional[str] = None
     risk_level: Optional[str] = None
+    # Currency-split breakdown: {category: {INR: amount, USD: amount}}
+    per_category_spend: Optional[Dict[str, Dict[str, float]]] = None
+
 
 class JobStatusResponse(BaseModel):
     status: str
     summary: Optional[JobSummarySchema] = None
+
 
 class TransactionSchema(BaseModel):
     txn_id: Optional[str] = None
@@ -29,14 +35,15 @@ class TransactionSchema(BaseModel):
     is_anomaly: bool
     anomaly_reason: Optional[str] = None
     llm_category: Optional[str] = None
-    llm_raw_response: Optional[str] = None
+    # llm_raw_response intentionally omitted — too noisy in API output
     llm_failed: bool
+
 
 class JobResultResponse(BaseModel):
     cleaned_transactions: List[TransactionSchema]
     anomalies: List[TransactionSchema]
-    per_category_spend: Dict[str, float]
     summary: Optional[JobSummarySchema] = None
+
 
 class JobListResponse(BaseModel):
     id: str

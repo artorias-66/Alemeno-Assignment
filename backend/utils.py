@@ -1,36 +1,40 @@
 import pandas as pd
 import numpy as np
+from typing import Tuple
 from config import settings
 
 DOMESTIC_BRANDS = settings.DOMESTIC_BRANDS
 
-def clean_data(file_path: str) -> pd.DataFrame:
-    # Read CSV
+def clean_data(file_path: str) -> Tuple[pd.DataFrame, int]:
+    """Reads, normalises, and deduplicates a transaction CSV.
+
+    Returns:
+        A tuple of (cleaned DataFrame, raw row count before dedup).
+    """
     df = pd.read_csv(file_path)
-    
-    # Standardize column names if needed, assume they are mostly correct based on assignment
+    raw_count = len(df)
+
+    # Standardize column names
     df.columns = [col.strip().lower() for col in df.columns]
-    
+
     # Ensure required columns exist
     expected_cols = ["txn_id", "date", "merchant", "amount", "currency", "status", "category", "account_id", "notes"]
     for col in expected_cols:
         if col not in df.columns:
             df[col] = None
 
-    # Remove exact duplicate rows
-    df = df.drop_duplicates()
+    # ── Normalise BEFORE dedup so format differences don't hide logical dupes ──
 
-    # Normalise dates to ISO 8601
-    # Mixed formats: DD-MM-YYYY and YYYY/MM/DD both appear
+    # Normalise dates to ISO 8601 (handles DD-MM-YYYY and YYYY/MM/DD)
     if 'date' in df.columns:
         df['date'] = pd.to_datetime(df['date'], format='mixed', dayfirst=True, errors='coerce').dt.date
 
-    # Strip currency symbols from amounts and convert to numeric
+    # Strip currency symbols and convert amount to numeric
     if 'amount' in df.columns:
         df['amount'] = df['amount'].astype(str).str.replace(r'[^\d.]', '', regex=True)
         df['amount'] = pd.to_numeric(df['amount'], errors='coerce')
 
-    # Uppercase status values
+    # Uppercase status for consistency
     if 'status' in df.columns:
         df['status'] = df['status'].astype(str).str.upper().str.strip()
         df['status'] = df['status'].replace('NAN', None)
@@ -40,14 +44,22 @@ def clean_data(file_path: str) -> pd.DataFrame:
         df['currency'] = df['currency'].astype(str).str.upper().str.strip()
         df['currency'] = df['currency'].replace('NAN', None)
 
-    # Fill missing categories with 'Uncategorised'
+    # Fill missing categories
     if 'category' in df.columns:
         df['category'] = df['category'].fillna('Uncategorised')
         df['category'] = df['category'].replace('nan', 'Uncategorised')
 
-    # Ensure NaN values are None for DB insertion
+    # Dedup on business key (date + merchant + amount + currency + account_id)
+    # This removes logical duplicates that differ only in notes/txn_id/row order
+    business_key = [c for c in ['date', 'merchant', 'amount', 'currency', 'account_id'] if c in df.columns]
+    if business_key:
+        df = df.drop_duplicates(subset=business_key)
+    else:
+        df = df.drop_duplicates()
+
+    # Replace NaN with None for DB insertion
     df = df.replace({np.nan: None})
-    return df
+    return df, raw_count
 
 def detect_anomalies(df: pd.DataFrame) -> pd.DataFrame:
     """
@@ -84,7 +96,7 @@ def detect_anomalies(df: pd.DataFrame) -> pd.DataFrame:
         usd_mask = df['currency'] == 'USD'
         merchant_str = df['merchant'].fillna('').astype(str).str.lower()
         
-        pattern = '|'.join(settings.DOMESTIC_BRANDS)
+        pattern = '|'.join(r'\b' + brand + r'\b' for brand in settings.DOMESTIC_BRANDS)
         domestic_mask = merchant_str.str.contains(pattern, regex=True, na=False)
         
         currency_mask = usd_mask & domestic_mask
