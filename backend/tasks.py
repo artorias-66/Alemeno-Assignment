@@ -1,7 +1,5 @@
 import logging
-from collections import defaultdict
 from datetime import datetime
-from typing import Dict, Any
 
 import pandas as pd
 from sqlalchemy.orm import Session
@@ -9,7 +7,7 @@ from sqlalchemy.orm import Session
 from celery_app import celery
 from database import SessionLocal
 from models import Job, Transaction, JobSummary
-from utils import clean_data, detect_anomalies
+from utils import clean_data, detect_anomalies, compute_aggregates
 from llm import classify_transactions_batch, generate_narrative_summary
 from config import settings
 
@@ -17,47 +15,6 @@ BATCH_SIZE = settings.BATCH_SIZE
 
 logger = logging.getLogger(__name__)
 
-
-def _compute_aggregates(df: pd.DataFrame) -> Dict[str, Any]:
-    """Compute all numeric aggregates deterministically in Pandas.
-
-    The LLM is never trusted with arithmetic — it only writes the narrative.
-    """
-    inr_df = df[df['currency'] == 'INR']
-    usd_df = df[df['currency'] == 'USD']
-
-    total_spend_inr = float(inr_df['amount'].sum()) if not inr_df.empty else 0.0
-    total_spend_usd = float(usd_df['amount'].sum()) if not usd_df.empty else 0.0
-
-    # Top 3 merchants by total spend (all currencies combined)
-    top_merchants = (
-        df.groupby('merchant')['amount']
-        .sum()
-        .nlargest(3)
-        .round(2)
-        .to_dict()
-    )
-
-    anomaly_count = int(df['is_anomaly'].sum())
-
-    # per_category_spend split by currency — avoids mixing INR and USD into one meaningless number
-    per_category_spend: Dict[str, Dict[str, float]] = defaultdict(lambda: defaultdict(float))
-    for _, row in df.iterrows():
-        cat = row.get('category') or 'Uncategorised'
-        currency = row.get('currency') or 'UNKNOWN'
-        amount = row.get('amount') or 0.0
-        per_category_spend[cat][currency] += float(amount)
-
-    # Convert defaultdicts to plain dicts for JSON serialisation
-    per_category_spend = {k: dict(v) for k, v in per_category_spend.items()}
-
-    return {
-        "total_spend_inr": total_spend_inr,
-        "total_spend_usd": total_spend_usd,
-        "top_merchants": top_merchants,
-        "anomaly_count": anomaly_count,
-        "per_category_spend": per_category_spend,
-    }
 
 
 @celery.task(bind=True)
@@ -159,7 +116,7 @@ def process_transactions_csv(self, job_id: str, file_path: str):
         # Re-read the category column from the mutated transactions_data so it
         # reflects any LLM overwrites before we compute aggregates.
         agg_df = pd.DataFrame(transactions_data)
-        aggregates = _compute_aggregates(agg_df)
+        aggregates = compute_aggregates(agg_df)
 
         # ── Step 6: LLM Narrative (isolated — never fails the job) ─────────────
         logger.info(f"Job {job_id}: Generating narrative summary.")

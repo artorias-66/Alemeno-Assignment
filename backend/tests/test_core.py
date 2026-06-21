@@ -16,7 +16,7 @@ import numpy as np
 def _csv_to_file(csv_text: str, tmp_path):
     """Write a CSV string to a temp file and return its path."""
     p = tmp_path / "test.csv"
-    p.write_text(textwrap.dedent(csv_text).strip())
+    p.write_text(textwrap.dedent(csv_text).strip(), encoding="utf-8")
     return str(p)
 
 
@@ -165,7 +165,7 @@ class TestDetectAnomalies:
 
 # ── _compute_aggregates ────────────────────────────────────────────────────────
 
-from tasks import _compute_aggregates
+from utils import compute_aggregates
 
 
 class TestComputeAggregates:
@@ -179,28 +179,28 @@ class TestComputeAggregates:
         })
 
     def test_total_spend_inr(self):
-        agg = _compute_aggregates(self._sample_df())
+        agg = compute_aggregates(self._sample_df())
         # 200 + 300 + 150 = 650
         assert agg['total_spend_inr'] == pytest.approx(650.0)
 
     def test_total_spend_usd(self):
-        agg = _compute_aggregates(self._sample_df())
+        agg = compute_aggregates(self._sample_df())
         # 500 + 1000 = 1500
         assert agg['total_spend_usd'] == pytest.approx(1500.0)
 
     def test_anomaly_count_is_exact(self):
-        agg = _compute_aggregates(self._sample_df())
+        agg = compute_aggregates(self._sample_df())
         assert agg['anomaly_count'] == 1
 
     def test_top_merchants_correct_and_limited_to_3(self):
-        agg = _compute_aggregates(self._sample_df())
+        agg = compute_aggregates(self._sample_df())
         top = agg['top_merchants']
         assert len(top) <= 3
         # Amazon (1000) should be #1
         assert list(top.keys())[0] == 'Amazon'
 
     def test_per_category_spend_split_by_currency(self):
-        agg = _compute_aggregates(self._sample_df())
+        agg = compute_aggregates(self._sample_df())
         pcs = agg['per_category_spend']
         # Food: 200+300+150 INR, 0 USD
         assert pcs['Food']['INR'] == pytest.approx(650.0)
@@ -211,7 +211,7 @@ class TestComputeAggregates:
 
     def test_currencies_never_mixed_into_single_number(self):
         """The old bug: INR+USD summed into one float. Verify it's now split."""
-        agg = _compute_aggregates(self._sample_df())
+        agg = compute_aggregates(self._sample_df())
         pcs = agg['per_category_spend']
         for cat, currencies in pcs.items():
             assert isinstance(currencies, dict), f"Category {cat} is not a currency dict"
